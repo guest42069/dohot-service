@@ -65,7 +65,7 @@ services:
 ##alternatively, your host can use 10.69.0.3 as your resolver.
     environment:
       - ServerIP=10.69.0.3
-      - PIHOLE_DNS_=10.69.0.2#5054 # defer to cloudflared for DNS upstream.
+      - PIHOLE_DNS_=10.69.0.2#5054 # defer to dohproxy for DNS upstream.
       - TZ=Europe/London # change this to suit your own TZ
     networks:
       pihole_net:
