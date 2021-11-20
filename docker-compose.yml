@@ -1,7 +1,7 @@
 version: "3"
 
 services:
-# torproxy is used to route cloudflared's DNS over HTTP requests to the configured `TUNNEL_DNS_UPSTREAM` DOH servers
+# torproxy is used to route dohproxy's DNS over HTTP requests to the configured `TUNNEL_DNS_UPSTREAM` DOH servers
   torproxy:
     build:
       context: ./torproxy
