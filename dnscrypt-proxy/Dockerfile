@@ -4,8 +4,9 @@ RUN go install -tags netgo -a -installsuffix netgo -ldflags '-extldflags "-stati
 FROM alpine
 COPY --from=build /go/bin/dnscrypt-proxy /dnscrypt-proxy
 COPY dnscrypt-proxy.toml /dnscrypt-proxy.toml
+RUN apk -U upgrade
+RUN apk add ca-certificates && rm -rf /var/cache/apk/*
 RUN addgroup -S dnscrypt && adduser -S dnscrypt -G dnscrypt
-RUN apk add --no-cache ca-certificates
 USER dnscrypt
 EXPOSE 5054/udp
 EXPOSE 5054/tcp
