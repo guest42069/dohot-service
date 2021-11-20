@@ -10,5 +10,4 @@ RUN addgroup -S dnscrypt && adduser -S dnscrypt -G dnscrypt
 USER dnscrypt
 EXPOSE 5054/udp
 EXPOSE 5054/tcp
-VOLUME [ "/dnscrypt-proxy.toml" ]
 ENTRYPOINT [ "/dnscrypt-proxy" ]
