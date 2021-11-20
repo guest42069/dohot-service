@@ -9,4 +9,5 @@ RUN apk add --no-cache ca-certificates
 USER dnscrypt
 EXPOSE 5054/udp
 EXPOSE 5054/tcp
+VOLUME [ "/dnscrypt-proxy.toml" ]
 ENTRYPOINT [ "/dnscrypt-proxy" ]
