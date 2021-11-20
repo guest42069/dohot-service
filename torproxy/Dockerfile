@@ -1,6 +1,6 @@
 FROM alpine
 RUN apk -U upgrade
-RUN apk add tor
+RUN apk add tor && rm -rf /var/cache/apk/*
 EXPOSE 9050
 VOLUME ["/var/lib/tor"]
 USER tor
