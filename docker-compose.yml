@@ -36,7 +36,7 @@ services:
     restart: unless-stopped
 ##optionally mount your own config here.
 #    volumes:
-#      - "./dnscrypt-proxy/dnscrypt-proxy.toml:/dnscrypt-proxy.toml"
+#      - "./dnscrypt-proxy/dnscrypt-proxy.toml:/etc/dnscrypt-proxy/dnscrypt-proxy.toml"
     networks:
       pihole_net:
         ipv4_address: 10.69.0.2
