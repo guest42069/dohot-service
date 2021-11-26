@@ -23,7 +23,7 @@ if [[ $? -eq 1 ]]; then
 fi
 podman pod exists dohot
 if [[ $? -eq 1 ]]; then
-  podman pod create --name dohot --network dohot
+  podman pod create --name dohot
   podman volume exists dohot-var-lib-tor
   if [[ $? -eq 1 ]]; then
     podman volume create dohot-var-lib-tor
