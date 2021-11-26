@@ -62,8 +62,8 @@ if [[ $? -eq 1 ]]; then
 	  -v dohot-etc-pihole:/etc/pihole \
 	  -d docker.io/pihole/pihole
   # generate systemd service files, install and enable them.
-  cd `mktemp -d`
+  cd /etc/systemd/system/
   podman generate systemd --new --name --files dohot
-  mv *.service /etc/systemd/system/
+  systemctl daemon-reload
   systemctl enable --now pod-dohot.service
 fi
