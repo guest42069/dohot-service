@@ -1,52 +1,43 @@
 #!/bin/bash
-if [[ $# -ne 1 ]]; then
-  echo "No IP provided..."
+function fail_out() {
+  podman pod stop dohot
+  podman pod rm dohot
+  podman network rm dohot
+  echo $1
   exit 1
-else
-  echo "Will bind DNS and web to $1"
-fi
-podman image exists localhost/dohproxy
+}
+function success_out() {
+  echo $1
+  exit 0
+}
+podman build --pull-always -t localhost/dohproxy -f dnscrypt-proxy/Dockerfile || fail_out "Unable to build dohproxy"
+podman build --pull-always -t localhost/torproxy -f torproxy/Dockerfile || fail_out "Unable to build torproxy"
+podman pull docker.io/pihole/pihole || fail_out "Unable to pull pihole"
+podman pod exists dohot && success_out "Done"
 if [[ $? -eq 1 ]]; then
-  podman build -t localhost/dohproxy -f dnscrypt-proxy/Dockerfile
-fi
-podman image exists localhost/torproxy
-if [[ $? -eq 1 ]]; then
-  podman build -t localhost/torproxy -f torproxy/Dockerfile
-fi
-podman image exists docker.io/pihole/pihole
-if [[ $? -eq 1 ]]; then
-  podman pull docker.io/pihole/pihole
-fi
-podman network exists dohot
-if [[ $? -eq 1 ]]; then
-  podman network create dohot --subnet 10.69.0.0/29
-fi
-podman pod exists dohot
-if [[ $? -eq 1 ]]; then
-  podman pod create --name dohot
-  podman volume exists dohot-var-lib-tor
-  if [[ $? -eq 1 ]]; then
-    podman volume create dohot-var-lib-tor
+  if [[ $# -ne 1 ]]; then
+    echo "No IP provided..."
+    echo "${0} <Your IP>"
+    exit 1
+  else
+    echo "Will bind DNS and web to $1"
   fi
-  podman volume exists dohot-etc-dnsmasqd
-  if [[ $? -eq 1 ]]; then
-    podman volume create dohot-etc-dnsmasqd
-  fi
-  podman volume exists dohot-etc-pihole
-  if [[ $? -eq 1 ]]; then
-    podman volume create dohot-etc-pihole
-  fi
+  podman network exists dohot || podman network create dohot --subnet 10.69.0.0/29 || fail_out "Unable to create network"
+  podman volume exists dohot-var-lib-tor || podman volume create dohot-var-lib-tor || fail_out "Unable to create volume"
+  podman volume exists dohot-etc-dnsmasqd || podman volume create dohot-etc-dnsmasqd || fail_out "Unable to create volume"
+  podman volume exists dohot-etc-pihole || podman volume create dohot-etc-pihole || fail_out "Unable to create volume"
+  podman pod create --name dohot || fail_out "Unable to create pod"
   podman run --rm --name dohot-torproxy \
 	  --pod dohot \
 	  --network dohot \
 	  --ip 10.69.0.4 \
 	  -v dohot-var-lib-tor:/var/lib/tor \
-	  -d localhost/torproxy
+	  -d localhost/torproxy || fail_out "Unable to run torproxy"
   podman run --rm --name dohot-dohproxy \
 	  --pod dohot \
 	  --network dohot \
 	  --ip 10.69.0.2 \
-	  -d localhost/dohproxy
+	  -d localhost/dohproxy || fail_out "Unable to run dohproxy"
   # binding to privileged ports.
   podman run --rm --name dohot-pihole \
 	  --pod dohot \
@@ -60,10 +51,9 @@ if [[ $? -eq 1 ]]; then
 	  -e 'TZ=Europe/London' \
 	  -v dohot-etc-dnsmasqd:/etc/dnsmasq.d/ \
 	  -v dohot-etc-pihole:/etc/pihole \
-	  -d docker.io/pihole/pihole
+	  -d docker.io/pihole/pihole || fail_out "Unable to run pihole"
   # generate systemd service files, install and enable them.
   cd /etc/systemd/system/
-  podman generate systemd --new --name --files dohot
-  systemctl daemon-reload
-  systemctl enable --now pod-dohot.service
+  podman generate systemd --new --name --files dohot && systemctl daemon-reload && systemctl enable --now pod-dohot.service || fail_out "Failed to create and enable pod management service."
+  success_out "Done"
 fi
