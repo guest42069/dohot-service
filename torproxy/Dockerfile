@@ -1,6 +1,6 @@
 FROM alpine
-RUN apk -U upgrade
-RUN apk add tor && rm -rf /var/cache/apk/*
+RUN apk -U upgrade --no-cache
+RUN apk add tor --no-cache
 EXPOSE 9050
 VOLUME ["/var/log/tor"]
 VOLUME ["/var/lib/tor"]
