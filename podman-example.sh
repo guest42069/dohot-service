@@ -16,9 +16,7 @@ podman pull docker.io/pihole/pihole || fail_out "Unable to pull pihole"
 podman pod exists dohot && success_out "Done"
 if [[ $? -eq 1 ]]; then
   if [[ $# -ne 1 ]]; then
-    echo "No IP provided..."
-    echo "${0} <Your IP>"
-    exit 1
+    fail_out "Usage: ${0} <Your IP>"
   else
     echo "Will bind DNS and web to $1"
   fi
