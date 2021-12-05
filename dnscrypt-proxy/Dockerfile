@@ -1,10 +1,19 @@
+FROM docker.io/alpine/git AS source
+ARG VERSION=master
+WORKDIR /go/src
+RUN git clone --depth=1 -b ${VERSION} https://github.com/DNSCrypt/dnscrypt-proxy.git .
+
 FROM golang:1.17-alpine AS build
+COPY --from=source /go/src /go/src
+WORKDIR /go/src/dnscrypt-proxy
 ENV CGO_ENABLED=0
-RUN go install -tags netgo -a -installsuffix netgo -ldflags '-extldflags "-static"' github.com/dnscrypt/dnscrypt-proxy/dnscrypt-proxy@2.1.1
+RUN go mod download
+RUN go build -ldflags '-extldflags "-static"' .
+
 FROM alpine
-COPY --from=build /go/bin/dnscrypt-proxy /dnscrypt-proxy
-RUN apk -U upgrade
-RUN apk add --no-cache ca-certificates && rm -rf /var/cache/apk/* && mkdir -p /etc/dnscrypt-proxy/ /var/log/dnscrypt-proxy/
+COPY --from=build /go/src/dnscrypt-proxy/dnscrypt-proxy /dnscrypt-proxy
+RUN apk -U upgrade --no-cache
+RUN apk add --no-cache ca-certificates && mkdir -p /etc/dnscrypt-proxy/ /var/log/dnscrypt-proxy/
 COPY dnscrypt-proxy.toml /etc/dnscrypt-proxy/dnscrypt-proxy.toml
 RUN addgroup -S dnscrypt && adduser -S dnscrypt -G dnscrypt && chown dnscrypt:dnscrypt /var/log/dnscrypt-proxy/
 USER dnscrypt
