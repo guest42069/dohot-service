@@ -3,8 +3,7 @@ version: "3"
 services:
 # torproxy is used to route dohproxy's DNS over HTTP requests to the configured `TUNNEL_DNS_UPSTREAM` DOH servers
   torproxy:
-    build:
-      context: ./torproxy
+    image: ghcr.io/guest42069/torproxy:latest # https://github.com/guest42069/tortainer
     restart: unless-stopped
     volumes:
       - type: volume
