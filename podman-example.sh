@@ -11,7 +11,7 @@ function success_out() {
   exit 0
 }
 podman build --pull-always -t localhost/dohproxy -f dnscrypt-proxy/Dockerfile || fail_out "Unable to build dohproxy"
-podman build --pull-always -t localhost/torproxy -f torproxy/Dockerfile || fail_out "Unable to build torproxy"
+podman pull ghcr.io/guest42069/torproxy || fail_out "Unable to pull torproxy"
 podman pull docker.io/pihole/pihole || fail_out "Unable to pull pihole"
 podman pod exists dohot && success_out "Done"
 if [[ $? -eq 1 ]]; then
@@ -30,7 +30,7 @@ if [[ $? -eq 1 ]]; then
 	  --network dohot \
 	  --ip 10.69.0.4 \
 	  -v dohot-var-lib-tor:/var/lib/tor \
-	  -d localhost/torproxy || fail_out "Unable to run torproxy"
+	  -d ghcr.io/guest42069/torproxy || fail_out "Unable to run torproxy"
   podman run --rm --name dohot-dohproxy \
 	  --pod dohot \
 	  --network dohot \
