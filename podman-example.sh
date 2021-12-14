@@ -10,7 +10,7 @@ function success_out() {
   echo $1
   exit 0
 }
-podman build --pull-always -t localhost/dohproxy -f dnscrypt-proxy/Dockerfile || fail_out "Unable to build dohproxy"
+podman pull ghcr.io/guest42069/dohproxy || fail_out "Unable to pull dohproxy"
 podman pull ghcr.io/guest42069/torproxy || fail_out "Unable to pull torproxy"
 podman pull docker.io/pihole/pihole || fail_out "Unable to pull pihole"
 podman pod exists dohot && success_out "Done"
