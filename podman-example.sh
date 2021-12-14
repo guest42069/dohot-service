@@ -35,7 +35,7 @@ if [[ $? -eq 1 ]]; then
 	  --pod dohot \
 	  --network dohot \
 	  --ip 10.69.0.2 \
-	  -d localhost/dohproxy || fail_out "Unable to run dohproxy"
+	  -d ghcr.io/guest42069/dohproxy || fail_out "Unable to run dohproxy"
   # binding to privileged ports.
   podman run --rm --name dohot-pihole \
 	  --pod dohot \
