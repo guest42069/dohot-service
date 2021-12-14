@@ -8,7 +8,7 @@ COPY --from=source /go/src /go/src
 WORKDIR /go/src/dnscrypt-proxy
 ENV CGO_ENABLED=0
 RUN go mod download
-RUN go build -ldflags '-extldflags "-static"' .
+RUN go build -ldflags '-extldflags "-static" -w -s' .
 
 FROM docker.io/library/alpine:latest
 COPY --from=build /go/src/dnscrypt-proxy/dnscrypt-proxy /dnscrypt-proxy
