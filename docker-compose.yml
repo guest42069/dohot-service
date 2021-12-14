@@ -30,8 +30,7 @@ services:
 #      - torproxy
 
   dohproxy:
-    build:
-      context: ./dnscrypt-proxy/
+    image: ghcr.io/guest42069/dohproxy:latest
     restart: unless-stopped
 ##optionally mount your own config here.
 #    volumes:
