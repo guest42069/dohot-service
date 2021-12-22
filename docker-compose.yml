@@ -1,7 +1,6 @@
 version: "3"
 
 services:
-# torproxy is used to route dohproxy's DNS over HTTP requests to the configured `TUNNEL_DNS_UPSTREAM` DOH servers
   torproxy:
     image: ghcr.io/guest42069/torproxy:latest # https://github.com/guest42069/tortainer
     restart: unless-stopped
@@ -13,26 +12,9 @@ services:
       pihole_net:
         ipv4_address: 10.69.0.4
 
-##cloudflared handles using DOH, it is defered to by the pihole service for upstream DNS.
-#  dohproxy:
-#    image: cloudflare/cloudflared:2021.11.0 # no latest tag is provided, this may need manual updating...
-#    command: proxy-dns
-#    restart: unless-stopped
-#    environment:
-#    - "HTTPS_PROXY=socks5://10.69.0.4:9050/" # torproxy should be used for HTTPS (I.E. DoH requests)
-#    - "TUNNEL_DNS_UPSTREAM=https://1.1.1.1/dns-query,https://1.0.0.1/dns-query"
-#    - "TUNNEL_DNS_PORT=5054"
-#    - "TUNNEL_DNS_ADDRESS=10.69.0.2"
-#    networks:
-#      pihole_net:
-#        ipv4_address: 10.69.0.2
-#    depends_on:
-#      - torproxy
-
   dohproxy:
     image: ghcr.io/guest42069/dohproxy:latest
     restart: unless-stopped
-##optionally mount your own config here.
 #    volumes:
 #      - "./dnscrypt-proxy/dnscrypt-proxy.toml:/etc/dnscrypt-proxy/dnscrypt-proxy.toml"
     networks:
@@ -40,10 +22,7 @@ services:
         ipv4_address: 10.69.0.2
     depends_on:
       - torproxy
-    
 
-##pihole provides DNS caching and configurable blocklists.
-##it also has a web interface for configuration, a random admin password is generated on first run.
   pihole:
     image: pihole/pihole
     restart: unless-stopped
@@ -54,18 +33,15 @@ services:
       - type: volume
         source: etc-pihole
         target: /etc/pihole/
-#    ports:
 ##Configure your docker/container hosts LAN IP here
+#    ports:
 #      - "YOUR_LAN_IP_HERE:80:80/tcp"
 #      - "YOUR_LAN_IP_HERE:53:53/tcp"
 #      - "YOUR_LAN_IP_HERE:53:53/udp"
-##commented out to avoid exposing 0.0.0.0, this should only be bound to a non-internet routable IP (or with appropriate upstream firewall rules to limit access)
-##this avoids your DNS server being used in DNS amplification DDOS attacks. https://www.rapid7.com/db/vulnerabilities/dns-amplification/
-##alternatively, your host can use 10.69.0.3 as your resolver.
     environment:
       - ServerIP=10.69.0.3
-      - PIHOLE_DNS_=10.69.0.2#5054 # defer to dohproxy for DNS upstream.
-      - TZ=Europe/London # change this to suit your own TZ
+      - PIHOLE_DNS_=10.69.0.2#5054
+      - TZ=Europe/London
     networks:
       pihole_net:
         ipv4_address: 10.69.0.3
@@ -78,7 +54,7 @@ networks:
   pihole_net:
     ipam:
       config:
-      - subnet: 10.69.0.0/29 # you'll want to ensure this subnet doesn't collide with any other subnet you're actually using on the host...
+      - subnet: 10.69.0.0/29
 
 volumes:
   etc-dnsmasqd:
