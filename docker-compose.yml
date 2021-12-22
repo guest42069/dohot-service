@@ -33,7 +33,6 @@ services:
       - type: volume
         source: etc-pihole
         target: /etc/pihole/
-##Configure your docker/container hosts LAN IP here
 #    ports:
 #      - "YOUR_LAN_IP_HERE:80:80/tcp"
 #      - "YOUR_LAN_IP_HERE:53:53/tcp"
