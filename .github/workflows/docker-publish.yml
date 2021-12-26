@@ -3,6 +3,7 @@ name: Docker
 on:
   schedule:
     - cron: '20 16 * * 5'
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
