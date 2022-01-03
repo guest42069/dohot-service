@@ -6,9 +6,8 @@ RUN git clone --depth=1 -b ${VERSION} https://github.com/DNSCrypt/dnscrypt-proxy
 FROM docker.io/library/golang:1.17-alpine AS build
 COPY --from=source /go/src /go/src
 WORKDIR /go/src/dnscrypt-proxy
-ENV CGO_ENABLED=0
 RUN go mod download
-RUN go build -ldflags '-extldflags "-static" -w -s' .
+RUN CGO_ENABLED=0 go build -ldflags '-extldflags "-static" -w -s -buildid=' -trimpath .
 
 FROM docker.io/library/alpine:latest
 COPY --from=build /go/src/dnscrypt-proxy/dnscrypt-proxy /dnscrypt-proxy
