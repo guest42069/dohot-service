@@ -7,8 +7,7 @@ FROM docker.io/library/golang:1.17-alpine AS build
 COPY --from=source /go/src /go/src
 WORKDIR /go/src/dnscrypt-proxy
 RUN go mod download
-RUN if [[ "`go env | grep "^GOARCH=" | sed 's:GOARCH="\(.*\)":\1:'`" != "arm" ]]; then export PIE="-buildmode=pie"; fi
-RUN CGO_ENABLED=0 go build -ldflags '-extldflags "-static" -w -s -buildid=' -trimpath $PIE .
+RUN if [[ "`go env | grep "^GOARCH=" | sed 's:^GOARCH="\(.*\)"$:\1:'`" != "arm" ]]; then CGO_ENABLED=0 go build -ldflags '-w -s -buildid=' -trimpath -buildmode=pie .;else CGO_ENABLED=0 go build -ldflags '-w -s -buildid=' -trimpath .;fi
 
 FROM docker.io/library/alpine:latest
 COPY --from=build /go/src/dnscrypt-proxy/dnscrypt-proxy /dnscrypt-proxy
