@@ -76,7 +76,7 @@ require_nofilter = true
 # use tor
 
 force_tcp = true
-proxy = 'socks5://10.69.0.4:9050'
+proxy = 'socks5://127.0.0.1:9050'
 
 # how long a dns query will wait for a response, in milliseconds (max recommended)
 
