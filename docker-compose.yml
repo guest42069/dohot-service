@@ -15,8 +15,8 @@ services:
   dohproxy:
     image: ghcr.io/guest42069/dohproxy:latest
     restart: unless-stopped
-#    volumes:
-#      - "./dnscrypt-proxy/dnscrypt-proxy.toml:/etc/dnscrypt-proxy/dnscrypt-proxy.toml"
+    volumes:
+      - "./dnscrypt-proxy.toml:/etc/dnscrypt-proxy/dnscrypt-proxy.toml"
     networks:
       pihole_net:
         ipv4_address: 10.69.0.2
