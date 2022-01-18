@@ -10,9 +10,9 @@ function success_out() {
   echo $1
   exit 0
 }
-podman pull ghcr.io/guest42069/dohproxy || fail_out "Unable to pull dohproxy"
-podman pull ghcr.io/guest42069/torproxy || fail_out "Unable to pull torproxy"
-podman pull docker.io/pihole/pihole || fail_out "Unable to pull pihole"
+podman pull ghcr.io/guest42069/dohproxy:latest || fail_out "Unable to pull dohproxy"
+podman pull ghcr.io/guest42069/torproxy:latest || fail_out "Unable to pull torproxy"
+podman pull docker.io/pihole/pihole:latest || fail_out "Unable to pull pihole"
 podman pod exists dohot && success_out "Done"
 if [[ $? -eq 1 ]]; then
   if [[ $# -ne 1 ]]; then
@@ -20,41 +20,30 @@ if [[ $? -eq 1 ]]; then
   else
     echo "Will bind DNS and web to $1"
   fi
-  podman network exists dohot || podman network create dohot --subnet 10.69.0.0/29 || fail_out "Unable to create network"
   podman volume exists dohot-var-lib-tor || podman volume create dohot-var-lib-tor || fail_out "Unable to create volume"
   podman volume exists dohot-etc-dnsmasqd || podman volume create dohot-etc-dnsmasqd || fail_out "Unable to create volume"
   podman volume exists dohot-etc-pihole || podman volume create dohot-etc-pihole || fail_out "Unable to create volume"
-  podman pod create --name dohot || fail_out "Unable to create pod"
+  podman pod create --name dohot -p ${1}:53:53/udp -p ${1}:53:53/tcp -p ${1}:80:80/tcp || fail_out "Unable to create pod"
   podman run --rm --name dohot-torproxy \
     --label "io.containers.autoupdate=registry" \
     --pod dohot \
-    --network dohot \
-    --ip 10.69.0.4 \
     -v dohot-var-lib-tor:/var/lib/tor \
-    -d ghcr.io/guest42069/torproxy || fail_out "Unable to run torproxy"
+    -d ghcr.io/guest42069/torproxy:latest || fail_out "Unable to run torproxy"
   podman run --rm --name dohot-dohproxy \
     --label "io.containers.autoupdate=registry" \
     --pod dohot \
-    --network dohot \
-    --ip 10.69.0.2 \
-    -d ghcr.io/guest42069/dohproxy || fail_out "Unable to run dohproxy"
+    -d ghcr.io/guest42069/dohproxy:latest || fail_out "Unable to run dohproxy"
   # binding to privileged ports.
   podman run --rm --name dohot-pihole \
     --label "io.containers.autoupdate=registry" \
     --pod dohot \
-    --network dohot \
-    -p "$1":53:53/udp \
-    -p "$1":53:53/tcp \
-    -p "$1":80:80/tcp \
-    --ip 10.69.0.3 \
-    -e 'ServerIP=10.69.0.3' \
-    -e 'PIHOLE_DNS_=10.69.0.2#5054' \
+    -e 'ServerIP=127.0.0.1' \
+    -e 'PIHOLE_DNS_=127.0.0.1#5054' \
     -e 'TZ=Europe/London' \
     -v dohot-etc-dnsmasqd:/etc/dnsmasq.d/ \
     -v dohot-etc-pihole:/etc/pihole \
-    -d docker.io/pihole/pihole || fail_out "Unable to run pihole"
+    -d docker.io/pihole/pihole:latest || fail_out "Unable to run pihole"
   # generate systemd service files, install and enable them.
-  cd /etc/systemd/system/
-  podman generate systemd --new --name --files dohot && systemctl daemon-reload && systemctl enable --now pod-dohot.service || fail_out "Failed to create and enable pod management service."
+  (cd /etc/systemd/system/ && podman generate systemd --new --name --files dohot && systemctl daemon-reload && systemctl enable --now pod-dohot.service)
   success_out "Done"
 fi
