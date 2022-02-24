@@ -2,7 +2,6 @@
 function fail_out() {
   podman pod stop dohot
   podman pod rm dohot
-  podman network rm dohot
   echo $1
   exit 1
 }
