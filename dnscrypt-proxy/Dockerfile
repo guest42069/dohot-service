@@ -3,11 +3,11 @@ ARG VERSION=master
 WORKDIR /go/src
 RUN git clone --depth=1 -b ${VERSION} https://github.com/DNSCrypt/dnscrypt-proxy.git .
 
-FROM docker.io/library/golang:1.17-alpine AS build
+FROM docker.io/library/golang:1.18-alpine AS build
 COPY --from=source /go/src /go/src
 WORKDIR /go/src/dnscrypt-proxy
 RUN go mod download
-RUN if [[ "`go env | grep "^GOARCH=" | sed 's:^GOARCH="\(.*\)"$:\1:'`" != "arm" ]]; then CGO_ENABLED=0 go build -ldflags '-w -s -buildid=' -trimpath -buildmode=pie .;else CGO_ENABLED=0 go build -ldflags '-w -s -buildid=' -trimpath .;fi
+RUN if [[ "`go env | grep "^GOARCH=" | sed 's:^GOARCH="\(.*\)"$:\1:'`" != "arm" ]]; then CGO_ENABLED=0 go build -buildvcs=false -ldflags '-w -s -buildid=' -trimpath -buildmode=pie .;else CGO_ENABLED=0 go build -buildvcs=false -ldflags '-w -s -buildid=' -trimpath .;fi
 
 FROM docker.io/library/alpine:latest
 COPY --from=build /go/src/dnscrypt-proxy/dnscrypt-proxy /dnscrypt-proxy
